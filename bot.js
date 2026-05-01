@@ -28,16 +28,10 @@ server.listen(PORT, () => {
 });
 
 // --- Data Storage ---
-const DATA_FILE = './availability_data.json';
+let inMemoryData = {};
 
-function loadData() {
-  if (!fs.existsSync(DATA_FILE)) return {};
-  return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-}
-
-function saveData(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-}
+function loadData() { return inMemoryData; }
+function saveData(data) { inMemoryData = data; }
 
 // --- Helpers ---
 function getWeekKey(offset = 0) {
@@ -148,17 +142,10 @@ async function registerCommands() {
   try {
     const rest = new REST({ version: '10' }).setToken(TOKEN);
     console.log('Registering slash commands...');
-
-    await Promise.race([
-      rest.put(
-        Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-        { body: commands.map(c => c.toJSON()) }
-      ),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timeout registering commands")), 10000)
-      )
-    ]);
-
+    await rest.put(
+      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+      { body: commands.map(c => c.toJSON()) }
+    );
     console.log('Commands registered!');
   } catch (err) {
     console.error("COMMAND REGISTER ERROR:", err);
@@ -293,7 +280,7 @@ client.on('interactionCreate', async interaction => {
   if (interaction.isButton()) {
     try {
       // Defer update immediately to prevent timeout
-      await interaction.deferUpdate().catch(() => {});
+      await interaction.deferUpdate().catch(e => console.error('deferUpdate failed:', e));
       
       const data = loadData();
       const guildId = interaction.guildId;
