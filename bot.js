@@ -144,12 +144,20 @@ const commands = [
 ];
 
 async function registerCommands() {
-  const rest = new REST({ version: '10' }).setToken(TOKEN);
-  console.log('Registering slash commands...');
-  await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands.map(c => c.toJSON()) });
-  console.log('Commands registered!');
-}
+  try {
+    const rest = new REST({ version: '10' }).setToken(TOKEN);
+    console.log('Registering slash commands...');
+    
+    await rest.put(
+      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+      { body: commands.map(c => c.toJSON()) }
+    );
 
+    console.log('Commands registered!');
+  } catch (err) {
+    console.error("COMMAND REGISTER ERROR:", err);
+  }
+}
 // --- Bot Client ---
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
