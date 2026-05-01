@@ -1,18 +1,29 @@
-require('dotenv').config();
+// Comment out or remove this line:
+//require('dotenv').config();
+
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 const http = require('http');
 
+// Get token directly from environment (works both locally and on Render)
+
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+
+//debug
+console.log("ENV CHECK:", {
+  TOKEN: process.env.DISCORD_TOKEN ? "OK" : "MISSING",
+  CLIENT_ID: process.env.DISCORD_CLIENT_ID ? "OK" : "MISSING"
+});
 
 // Keep-alive HTTP server
 const server = http.createServer((req, res) => {
   res.writeHead(200);
   res.end('Bot is running!');
 });
-server.listen(3000, () => {
-  console.log('Keep-alive server running on port 3000');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Keep-alive server running on port ${PORT}`);
 });
 
 // --- Data Storage ---
