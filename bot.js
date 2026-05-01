@@ -17,6 +17,14 @@ console.log("ENV CHECK:", {
   CLIENT_ID: process.env.DISCORD_CLIENT_ID ? "OK" : "MISSING"
 });
 
+//check if render connects with discord
+const https = require('https');
+https.get('https://discord.com/api/v10/gateway', (res) => {
+  console.log('Discord reachable, status:', res.statusCode);
+}).on('error', (e) => {
+  console.error('Cannot reach Discord:', e.message);
+});
+
 // Keep-alive HTTP server
 const server = http.createServer((req, res) => {
   res.writeHead(200);
