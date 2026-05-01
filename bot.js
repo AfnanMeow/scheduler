@@ -148,11 +148,16 @@ async function registerCommands() {
   try {
     const rest = new REST({ version: '10' }).setToken(TOKEN);
     console.log('Registering slash commands...');
-    
-    await rest.put(
-      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-      { body: commands.map(c => c.toJSON()) }
-    );
+
+    await Promise.race([
+      rest.put(
+        Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+        { body: commands.map(c => c.toJSON()) }
+      ),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout registering commands")), 10000)
+      )
+    ]);
 
     console.log('Commands registered!');
   } catch (err) {
@@ -406,4 +411,8 @@ client.on('interactionCreate', async interaction => {
 });
 
 // --- Start ---
-registerCommands().then(() => client.login(TOKEN));
+client.login(TOKEN);
+
+registerCommands().catch(err => {
+  console.error("Command registration failed:", err);
+});
